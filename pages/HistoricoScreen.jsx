@@ -7,7 +7,12 @@ import ProgressBar from '../components/ProgressBar';
 import Navbar from '../components/Navbar';
 
 // Função para formatar a data e hora
-const formatDate = (date) => {
+const formatDate = (completedAt) => {
+  if (!completedAt) return 'Data não disponível';
+
+  // Verifica o tipo de `completedAt` e converte para uma `Date`
+  const date = completedAt.toDate ? completedAt.toDate() : new Date(completedAt);
+
   const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
   return date.toLocaleDateString('pt-BR', options);
 };
@@ -42,7 +47,7 @@ const HistoricoScreen = () => {
                 onStart={() => handleStartMeditation(item)} // Permite iniciar a sessão a partir do histórico
               />
               {/* Exibe a data de conclusão formatada */}
-              <Text style={styles.dateText}>Concluída em: {formatDate(new Date(item.completedAt.toDate()))}</Text>
+              <Text style={styles.dateText}>Concluída em: {formatDate(item.completedAt)}</Text>
             </View>
           )}
         />

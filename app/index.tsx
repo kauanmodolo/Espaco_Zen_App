@@ -8,6 +8,8 @@ import SessoesScreen from '../pages/SessoesScreen';
 import PerfilScreen from '../pages/PerfilScreen';
 import HistoricoScreen from '../pages/HistoricoScreen';
 import { ProgressProvider } from '../contexts/ProgressContext'; // Importa o contexto
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Stack = createNativeStackNavigator();
 
@@ -22,6 +24,7 @@ const App = () => {
         <Stack.Screen name="Perfil" component={PerfilScreen} />
         <Stack.Screen name="Historico" component={HistoricoScreen} />
       </Stack.Navigator>
+      <ToastContainer /> {/* Adicione aqui para exibir notificações */}
     </ProgressProvider>
   );
 };

@@ -1,14 +1,13 @@
-// components/CreateSessionModal.js
 import React, { useState } from 'react';
-import { View, Text, Modal, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Modal, StyleSheet } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import { firebase } from '../firebaseConfig';
+import { toast } from 'react-toastify';
 
 const CreateSessionModal = ({ visible, onClose, onCreate }) => {
   const [name, setName] = useState('');
   const [duration, setDuration] = useState('');
   const [category, setCategory] = useState('Relaxamento');
-  const [isCreating, setIsCreating] = useState(false); // Estado para evitar duplicação
 
   const categories = [
     { label: 'Relaxamento', value: 'Relaxamento' },
@@ -19,10 +18,12 @@ const CreateSessionModal = ({ visible, onClose, onCreate }) => {
   ];
 
   const handleCreate = async () => {
-    if (isCreating) return; // Evita duplicação
+    if (!name || !duration || !category) {
+      toast.error('Preencha todos os campos para criar uma sessão.', { position: 'top-right', autoClose: 3000 });
+      return;
+    }
 
-    if (name && duration && category) {
-      setIsCreating(true); // Define como em criação
+    try {
       const userId = firebase.auth().currentUser?.uid;
       const newSession = {
         title: name,
@@ -32,21 +33,15 @@ const CreateSessionModal = ({ visible, onClose, onCreate }) => {
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       };
 
-      try {
-        await firebase.firestore().collection('sessions').add(newSession);
-        onCreate(newSession); // Atualiza a lista de sessões localmente
-        setName('');
-        setDuration('');
-        setCategory('Relaxamento');
-        onClose();
-      } catch (error) {
-        Alert.alert('Erro', 'Não foi possível criar a sessão. Tente novamente.');
-        console.error(error);
-      } finally {
-        setIsCreating(false); // Redefine após criação
-      }
-    } else {
-      Alert.alert('Erro', 'Preencha todos os campos.');
+      await firebase.firestore().collection('sessions').add(newSession);
+      toast.success('Sessão personalizada criada com sucesso!', { position: 'top-right', autoClose: 3000 });
+      onCreate(newSession);
+      setName('');
+      setDuration('');
+      setCategory('Relaxamento');
+      onClose();
+    } catch (error) {
+      toast.error('Erro ao criar sessão personalizada. Tente novamente.', { position: 'top-right', autoClose: 3000 });
     }
   };
 
@@ -79,11 +74,7 @@ const CreateSessionModal = ({ visible, onClose, onCreate }) => {
             placeholder={{ label: 'Selecione uma categoria', value: null }}
           />
           <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={[styles.button, isCreating && { opacity: 0.6 }]}
-              onPress={handleCreate}
-              disabled={isCreating}
-            >
+            <TouchableOpacity style={styles.button} onPress={handleCreate}>
               <Text style={styles.buttonText}>Criar</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.button, styles.cancelButton]} onPress={onClose}>
@@ -121,17 +112,18 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     padding: 10,
     marginVertical: 5,
-    fontSize: 16,
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     marginTop: 15,
   },
   button: {
     padding: 10,
     backgroundColor: '#5da0a0',
     borderRadius: 5,
+    flex: 1,
+    marginHorizontal: 5,
   },
   cancelButton: {
     backgroundColor: '#ccc',
@@ -139,7 +131,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     textAlign: 'center',
-    fontWeight: 'bold',
   },
 });
 
